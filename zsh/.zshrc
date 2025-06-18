@@ -6,7 +6,7 @@
 
 # Periodic auto-update on Zsh startup: 'ask' or 'no'.
 # You can manually run `z4h update` to update everything.
-zstyle ':z4h:' auto-update      'no'
+zstyle ':z4h:' auto-update      'ask'
 # Ask whether to auto-update this often; has no effect if auto-update is 'no'.
 zstyle ':z4h:' auto-update-days '28'
 
@@ -15,7 +15,7 @@ zstyle ':z4h:bindkey' keyboard  'pc'
 
 # Start tmux if not already in tmux.
 # zstyle ':z4h:' start-tmux command tmux -u new -A -D -t z4h
-zstyle ':z4h:' start-tmux command tmux -u new-session -s "z4h-$$"
+# zstyle ':z4h:' start-tmux command tmux -u new-session -s "z4h-$$"
 
 
 zstyle ':z4h:' propagate-cwd yes
@@ -31,7 +31,9 @@ zstyle ':z4h:' term-shell-integration 'yes'
 zstyle ':z4h:autosuggestions' forward-char 'accept'
 
 # Recursively traverse directories when TAB-completing files.
-zstyle ':z4h:fzf-complete' recurse-dirs 'no'
+zstyle ':z4h:fzf-complete' recurse-dirs 'yes'
+# Tab will accept the selection and immediately open fzf again if the current word isn't fully specified yet
+zstyle ':z4h:fzf-complete' fzf-bindings tab:repeat
 
 # Enable direnv to automatically source .envrc files.
 zstyle ':z4h:direnv'         enable 'yes'
@@ -40,7 +42,7 @@ zstyle ':z4h:direnv:success' notify 'yes'
 
 # Enable ('yes') or disable ('no') automatic teleportation of z4h over
 # SSH when connecting to these hosts.
-zstyle ':z4h:ssh:example-hostname1'   enable 'yes'
+# zstyle ':z4h:ssh:pandora-atlas'   enable 'yes'
 zstyle ':z4h:ssh:*.example-hostname2' enable 'no'
 # The default value if none of the overrides above match the hostname.
 zstyle ':z4h:ssh:*'                   enable 'no'
@@ -87,10 +89,10 @@ z4h bindkey z4h-backward-kill-zword Ctrl+Alt+Backspace
 z4h bindkey undo Ctrl+/ Shift+Tab  # undo the last command line change
 z4h bindkey redo Alt+/             # redo the last undone command line change
 
-z4h bindkey z4h-cd-back    Alt+Left   # cd into the previous directory
-z4h bindkey z4h-cd-forward Alt+Right  # cd into the next directory
-z4h bindkey z4h-cd-up      Alt+Up     # cd into the parent directory
-z4h bindkey z4h-cd-down    Alt+Down   # cd into a child directory
+z4h bindkey z4h-cd-back    Ctrl+Left   # cd into the previous directory
+z4h bindkey z4h-cd-forward Ctrl+Right  # cd into the next directory
+z4h bindkey z4h-cd-up      Ctrl+Up     # cd into the parent directory
+z4h bindkey z4h-cd-down    Ctrl+Down   # cd into a child directory
 
 # Autoload functions.
 autoload -Uz zmv
@@ -105,6 +107,27 @@ compdef _directories md
 # Define aliases.
 alias tree='tree -a -I .git'
 alias ll='ls -al'
+
+# Pandora Aliases
+if [[ "$(hostname)" == "pandora" ]]; then
+    alias appdata='cd /mnt/1tbssd/appdata'
+    alias dstats='sudo docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}\t{{.NetIO}}\t{{.BlockIO}}"'
+    alias dstats-live='sudo docker stats'
+    alias dlimits='sudo docker inspect $(sudo docker ps -q) --format "{{.Name}} - CPU: {{.HostConfig.CpuShares}} shares, Memory: {{.HostConfig.Memory}} bytes"'
+    alias dps='sudo docker ps -a'
+    alias dps-format='sudo docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}"'
+    alias dlogs='sudo docker logs --tail=50'
+    alias dsystem='sudo docker system df'
+    alias dcleanup='sudo docker system prune -af && sudo docker volume prune -f'
+    alias dcompose-ps='find /opt/docker_compose -name compose.yml -o -name docker-compose.yml | xargs -I {} dirname {} | xargs -I {} sh -c "echo Stack: {} && cd {} && sudo docker compose ps"'
+    alias dcompose-restart='find /opt/docker_compose -name compose.yml -o -name docker-compose.yml | xargs -I {} dirname {} | xargs -I {} sh -c "cd {} && sudo docker compose restart"'
+    alias dcompose-down='find /opt/docker_compose -name compose.yml -o -name docker-compose.yml | xargs -I {} dirname {} | xargs -I {} sh -c "cd {} && sudo docker compose down"'
+    alias dcompose-up='find /opt/docker_compose -name compose.yml -o -name docker-compose.yml | xargs -I {} dirname {} | xargs -I {} sh -c "cd {} && sudo docker compose up -d"'
+    alias dcaddy-logs='sudo docker logs caddy --tail 50'
+    alias dcaddy-status='sudo docker ps | grep caddy'
+    alias dresources='echo Memory: && free -h && echo && echo CPU: && nproc && echo && echo Disk: && df -h && echo && echo Docker: && sudo docker system df'
+    alias dmonitor='watch -n 2 "sudo docker stats --no-stream --format \"table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}\""'
+fi
 
 # Add flags to existing aliases.
 alias ls="${aliases[ls]:-ls} -A"
