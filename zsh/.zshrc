@@ -108,7 +108,7 @@ compdef _directories md
 alias tree='tree -a -I .git'
 alias ll='ls -al'
 alias python='python3'
-alias vnv='. venv/bin/activate'
+alias vnv='. .venv/bin/activate'
 
 # Pandora Aliases
 if [[ "$(hostname)" == "pandora" ]]; then
